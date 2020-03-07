@@ -1,0 +1,42 @@
+apply plugin: 'groovy'
+apply plugin: 'idea'
+apply plugin: 'maven-publish'
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+def pluginGroupId = 'com.wuyi.repairer'
+def pluginArtifactId = 'gradle-plugin'
+def pluginVersion = '0.0.1'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation gradleApi()
+    implementation 'com.android.tools.build:gradle:3.5.3'
+//    implementation 'org.ow2.asm:asm-all:5.0'
+
+    implementation 'com.wuyi.repairer:repairer-annotation:0.0.1'
+}
+
+compileGroovy {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+    options.encoding = "UTF-8"
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = pluginGroupId
+            artifactId = pluginArtifactId
+            version = pluginVersion
+
+            from components.java
+        }
+    }
+}

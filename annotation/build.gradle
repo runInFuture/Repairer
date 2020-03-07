@@ -1,0 +1,25 @@
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+
+def GroupId = 'com.wuyi.repairer'
+def ArtifactId = 'repairer-annotation'
+def Version = '0.0.1'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+sourceCompatibility = "7"
+targetCompatibility = "7"
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = GroupId
+            artifactId = ArtifactId
+            version = Version
+
+            from components.java
+        }
+    }
+}
