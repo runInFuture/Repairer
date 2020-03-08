@@ -17,17 +17,19 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation gradleApi()
-    implementation 'com.android.tools.build:gradle:3.5.3'
+    implementation 'com.android.tools.build:gradle:3.5.0'
 //    implementation 'org.ow2.asm:asm-all:5.0'
 
     implementation 'com.wuyi.repairer:repairer-annotation:0.0.1'
 }
 
 compileGroovy {
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
     options.encoding = "UTF-8"
 }
+
+
 
 publishing {
     publications {

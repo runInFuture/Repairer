@@ -5,6 +5,6 @@ package com.wuyi.repairer.annotation;
  * todo is needed?
  */
 public interface Call<T> {
-    void parameters(Object[] parameters);
+    void parameters(Object... parameters);
     T invoke();
 }

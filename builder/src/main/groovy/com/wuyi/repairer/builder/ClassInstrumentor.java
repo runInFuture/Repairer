@@ -9,8 +9,9 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,16 +29,16 @@ public class ClassInstrumentor {
 
     /**
      * add a {@link Const#changeFieldName} field to the class given.
-     * @param clazzStream the input stream of class data
+     * @param classFile the .class file
      * @return the instrumented class data
      */
-    private byte[] instrument(InputStream clazzStream) {
+    public byte[] instrument(File classFile) {
         ClassWriter cw = new ClassWriter(0);
         Set<Field> fields = new HashSet<>();
         fields.add(newChangeField());
         AddFieldAdapter addFieldAdapter = new AddFieldAdapter(cw, fields);
         try {
-            ClassReader cr = new ClassReader(clazzStream);
+            ClassReader cr = new ClassReader(new FileInputStream(classFile));
             cr.accept(addFieldAdapter, 0 /* skip nothing */);
         } catch (IOException e) {
             e.printStackTrace();
