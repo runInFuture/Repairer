@@ -1,7 +1,7 @@
 package com.wuyi.repairer.builder.util;
 
 import com.wuyi.repairer.builder.proto.Action;
-import com.wuyi.repairer.builder.proto.Const;
+import com.wuyi.repairer.proto.Const;
 
 import java.io.File;
 import java.io.FileFilter;

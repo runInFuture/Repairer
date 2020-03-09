@@ -2,7 +2,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 def GroupId = 'com.wuyi.repairer'
-def ArtifactId = 'repairer-annotation'
+def ArtifactId = 'repairer-lib'
 def Version = '0.0.1'
 
 dependencies {

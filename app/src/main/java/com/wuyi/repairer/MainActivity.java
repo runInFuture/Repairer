@@ -15,7 +15,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         TextView tv = new TextView(this);
-        tv.setText("Click Me!");
+        tv.setText("Click Me! hehe");
         tv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -1,2 +1,2 @@
-include ':app', ':builder', ':annotation'
+include ':app', ':builder', ':lib'
 rootProject.name='Repairer'

@@ -20,7 +20,7 @@ dependencies {
     implementation 'com.android.tools.build:gradle:3.5.0'
 //    implementation 'org.ow2.asm:asm-all:5.0'
 
-    implementation 'com.wuyi.repairer:repairer-annotation:0.0.1'
+    implementation 'com.wuyi.repairer:repairer-lib:0.0.1'
 }
 
 compileGroovy {

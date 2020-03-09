@@ -1,9 +1,9 @@
 package com.wuyi.repairer.builder;
 
-import com.wuyi.repairer.annotation.Change;
 import com.wuyi.repairer.builder.adapter.AddFieldAdapter;
-import com.wuyi.repairer.builder.proto.Const;
 import com.wuyi.repairer.builder.proto.Field;
+import com.wuyi.repairer.proto.Const;
+import com.wuyi.repairer.runtime.IncrementalChange;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -47,6 +47,6 @@ public class ClassInstrumentor {
     }
 
     private Field newChangeField() {
-        return new Field(Const.changeFieldName, null, ACC_PUBLIC, Type.getType(Change.class));
+        return new Field(Const.changeFieldName, null, ACC_PUBLIC, Type.getType(IncrementalChange.class));
     }
 }
