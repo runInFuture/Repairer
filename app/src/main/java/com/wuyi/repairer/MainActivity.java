@@ -10,12 +10,14 @@ import android.widget.Toast;
 
 import com.wuyi.repairer.annotation.Fix;
 
+import java.lang.reflect.Field;
+
 public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         TextView tv = new TextView(this);
-        tv.setText("Click Me! hehe");
+        tv.setText("Clickd ddddddMe!ddddddddddss");
         tv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -32,14 +34,22 @@ public class MainActivity extends Activity {
      * This is the method to be fixed
      */
     private void showToast() {
-        Toast.makeText(this, "Something must be wrong...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "  Something must be wrong...", Toast.LENGTH_SHORT).show();
+        String message = "";
+        try {
+            Field field = this.getClass().getDeclaredField("$change");
+            message = String.valueOf(field.get(this));
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            message = e.getMessage();
+        }
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     /**
      * The fixed version method
      */
-//    @Fix
-//    private void showToast() {
-//        Toast.makeText(this, "Aha! We fixed anything!", Toast.LENGTH_SHORT).show();
-//    }
+    @Fix
+    private void showToastFix() {
+        Toast.makeText(this, "Aha! We fixed anything!", Toast.LENGTH_SHORT).show();
+    }
 }

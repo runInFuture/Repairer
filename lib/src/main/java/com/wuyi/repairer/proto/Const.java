@@ -8,5 +8,6 @@ public final class Const {
 
     public static final class File {
         public static final String CLASS_SUFFIX = ".class";
+        public static final String JAR_SUFFIX = ".jar";
     }
 }

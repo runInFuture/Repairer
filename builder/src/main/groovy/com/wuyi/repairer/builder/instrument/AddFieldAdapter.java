@@ -1,4 +1,4 @@
-package com.wuyi.repairer.builder.adapter;
+package com.wuyi.repairer.builder.instrument;
 
 import com.wuyi.repairer.builder.Config;
 import com.wuyi.repairer.builder.proto.Field;

@@ -4,6 +4,8 @@ import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
 import com.wuyi.repairer.builder.tasks.InstrumentTask
 import com.wuyi.repairer.builder.tasks.TaskDirector
+import com.wuyi.repairer.builder.tasks.tansform.InstantRunTransform
+import com.wuyi.repairer.builder.tasks.tansform.InstrumentStrategy
 import com.wuyi.repairer.builder.tasks.tansform.InstrumentTransform
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -20,6 +22,8 @@ class InstrumentPlugin implements Plugin<Project> {
     void apply(Project project) {
         // now let's hook!
 
+        Context.of().project = project
+
         AppPlugin agp = project.plugins.findPlugin("com.android.application")
         AppExtension appExtension = project.extensions.getByType(AppExtension)
         if (!agp || !appExtension) {
@@ -31,8 +35,9 @@ class InstrumentPlugin implements Plugin<Project> {
         director.runAfter("mergeDexDebug", project.tasks.create(InstrumentTask.TASK_NAME, InstrumentTask))
 
         // register the transforms, retrieve and instrument all the class of application
-        InstrumentTransform instrumentTransform = new InstrumentTransform()
-        appExtension.registerTransform(instrumentTransform)
+//        InstrumentTransform instrumentTransform = new InstrumentTransform()
+//        appExtension.registerTransform(instrumentTransform)
+        appExtension.registerTransform(new InstantRunTransform(InstrumentStrategy.RELEASE_ONLY))
     }
 
 }

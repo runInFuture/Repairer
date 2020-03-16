@@ -1,6 +1,6 @@
 package com.wuyi.repairer.builder;
 
-import com.wuyi.repairer.builder.adapter.AddFieldAdapter;
+import com.wuyi.repairer.builder.instrument.AddFieldAdapter;
 import com.wuyi.repairer.builder.proto.Field;
 import com.wuyi.repairer.proto.Const;
 import com.wuyi.repairer.runtime.IncrementalChange;
