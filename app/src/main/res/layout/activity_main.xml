@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center">
+
+    <TextView
+        android:id="@+id/showBtn"
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:gravity="center"
+        android:background="#99999999"
+        android:text="ClickMe!"
+        android:onClick="showToast"/>
+
+    <TextView
+        android:id="@+id/showBtn2"
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:gravity="center"
+        android:layout_marginTop="50dp"
+        android:background="#99999999"
+        android:text="Simulate Fix"
+        android:onClick="showToast2"/>
+
+    <TextView
+        android:id="@+id/repairBtn"
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="50dp"
+        android:background="#99999999"
+        android:gravity="center"
+        android:text="repairer"
+        android:onClick="patch"/>
+</LinearLayout>

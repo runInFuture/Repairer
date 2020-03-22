@@ -17,6 +17,7 @@
 package com.wuyi.repairer.builder.instrument;
 
 import com.android.annotations.NonNull;
+import com.wuyi.repairer.builder.Logger;
 
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;

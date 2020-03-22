@@ -1,7 +1,9 @@
-package com.wuyi.repairer.builder
+package com.wuyi.repairer.builder.plugin
 
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
+import com.wuyi.repairer.builder.Context
+import com.wuyi.repairer.builder.Logger
 import com.wuyi.repairer.builder.tasks.InstrumentTask
 import com.wuyi.repairer.builder.tasks.TaskDirector
 import com.wuyi.repairer.builder.tasks.tansform.InstantRunTransform
@@ -21,7 +23,6 @@ class InstrumentPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         // now let's hook!
-
         Context.of().project = project
 
         AppPlugin agp = project.plugins.findPlugin("com.android.application")

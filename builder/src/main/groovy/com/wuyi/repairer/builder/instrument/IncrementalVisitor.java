@@ -383,7 +383,6 @@ public class IncrementalVisitor extends ClassVisitor {
      * @param classNode the ASM representation of an interface.
      * @return true if it has any non abstract methods.
      */
-    @VisibleForTesting
     static boolean hasDefaultMethods(@NonNull ClassNode classNode) {
         if ((classNode.access & Opcodes.ACC_INTERFACE) == 0) {
             return false;
@@ -424,7 +423,6 @@ public class IncrementalVisitor extends ClassVisitor {
      * @param inputFile the input file containing the byte codes.
      * @return true if the class should be instrumented for InstantRun, false otherwise.
      */
-    @VisibleForTesting
     static boolean isClassEligibleForInstantRun(@NonNull File inputFile) {
         // fixme and a @NoFix annotation support here
         if (inputFile.getPath().endsWith(SdkConstants.DOT_CLASS)) {

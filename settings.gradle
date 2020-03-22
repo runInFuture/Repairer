@@ -1,2 +1,2 @@
-include ':app', ':builder', ':lib'
+include ':app', ':builder', ':lib', ':appfix'
 rootProject.name='Repairer'

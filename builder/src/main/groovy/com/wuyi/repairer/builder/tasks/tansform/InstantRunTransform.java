@@ -41,9 +41,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
-import com.wuyi.repairer.builder.Context;
 import com.wuyi.repairer.builder.Logger;
-import com.wuyi.repairer.builder.instrument.IncrementalChangeVisitor;
 import com.wuyi.repairer.builder.instrument.IncrementalSupportVisitor;
 import com.wuyi.repairer.builder.instrument.IncrementalVisitor;
 import com.wuyi.repairer.builder.proto.Action;
@@ -52,18 +50,15 @@ import com.wuyi.repairer.builder.util.Traversal;
 import com.wuyi.repairer.proto.Const;
 
 import org.gradle.api.logging.Logging;
-import org.gradle.jvm.tasks.Jar;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -73,7 +68,6 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
-import java.util.zip.ZipEntry;
 
 import static com.android.build.api.transform.QualifiedContent.DefaultContentType;
 import static com.android.build.api.transform.QualifiedContent.Scope;
@@ -87,7 +81,6 @@ public class InstantRunTransform extends Transform {
 
     protected static final ILogger LOGGER =
             new LoggerWrapper(Logging.getLogger(InstantRunTransform.class));
-    private final ImmutableList.Builder<String> generatedClasses3Names = ImmutableList.builder();
 
     public InstantRunTransform(InstrumentStrategy strategy) {
         this.strategy = strategy;
@@ -163,13 +156,6 @@ public class InstantRunTransform extends Transform {
                 outputProvider.getContentLocation(
                         "classes", TransformManager.CONTENT_CLASS, getScopes(), Format.DIRECTORY);
 
-        File classesThreeOutput =
-                outputProvider.getContentLocation(
-                        "enhanced_classes",
-                        ImmutableSet.of(ExtendedContentType.CLASSES_ENHANCED),
-                        getScopes(),
-                        Format.DIRECTORY);
-
         // first get all referenced input to construct a class loader capable of loading those
         // classes. This is useful for ASM as it needs to load classes
         List<URL> referencedInputUrls = getAllClassesLocations(
@@ -210,6 +196,7 @@ public class InstantRunTransform extends Transform {
             }
 
             Map<String, String> jarNameMap = new HashMap<>();
+            File jarNameMapBaseDir = null;
             for (JarInput jarInput : input.getJarInputs()) {
                 File jarOutput =
                         outputProvider.getContentLocation(
@@ -218,6 +205,7 @@ public class InstantRunTransform extends Transform {
                                 jarInput.getScopes(),
                                 Format.JAR);
 
+                jarNameMapBaseDir = jarOutput.getParentFile();
                 File jarFile = jarInput.getFile();
                 Preconditions.checkState(
                         jarFile.getName().endsWith(Const.File.JAR_SUFFIX),
@@ -267,24 +255,30 @@ public class InstantRunTransform extends Transform {
             }
 
             // record the originJar->instrumentedJar map
-
+            if (!jarNameMap.isEmpty() && jarNameMapBaseDir != null) {
+                recordJarMap(jarNameMap, new File(jarNameMapBaseDir, "jarMap.txt"));
+            }
         }
 
         // restore the origin thread class load
         Thread.currentThread().setContextClassLoader(currentThreadClassLoader);
-
-        wrapUpOutputs(classesTwoOutput, classesThreeOutput);
     }
 
-    protected void wrapUpOutputs(File classes2Folder, File classes3Folder)
-            throws IOException {
-        // generate the patch file and add it to the list of files to process next.
-        ImmutableList<String> generatedClassNames = generatedClasses3Names.build();
-        if (!generatedClassNames.isEmpty()) {
-            writePatchFileContents(
-                    generatedClassNames,
-                    classes3Folder,
-                    9527 /* ? */);
+    private void recordJarMap(Map<String, String> map, File outputFile) {
+        try {
+            StringBuilder builder = new StringBuilder();
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                builder.append(String.format("%s -> %s \n", entry.getKey(), entry.getValue()));
+            }
+            if (!outputFile.exists()) {
+                outputFile.createNewFile();
+            }
+            BufferedWriter writer = Files.newWriter(outputFile, Charset.defaultCharset());
+            writer.write(builder.toString());
+            writer.flush();
+            Logger.getInstance().log("record the jar map in " + outputFile.getPath());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -381,108 +375,7 @@ public class InstantRunTransform extends Transform {
         }
     }
 
-    /**
-     * Transform a single file into a {@link ExtendedContentType#CLASSES_ENHANCED} format
-     *
-     * @param inputDir the input directory containing the input file.
-     * @param inputFile the input file within the input directory to transform.
-     * @param outputDir the output directory where to place the transformed file.
-     * @throws IOException if the transformation failed.
-     */
-    @Nullable
-    protected Void transformToClasses3Format(File inputDir, File inputFile, File outputDir)
-            throws IOException {
-
-        File outputFile =
-                IncrementalVisitor.instrumentClass(
-                        21 /* ? */,
-                        inputDir,
-                        inputFile,
-                        outputDir,
-                        IncrementalChangeVisitor.VISITOR_BUILDER,
-                        LOGGER);
-
-        // if the visitor returned null, that means the class cannot be hot swapped or more likely
-        // that it was disabled for InstantRun, we don't add it to our collection of generated
-        // classes and it will not be part of the Patch class that apply changes.
-        if (outputFile == null) {
-            LOGGER.info("Class %s cannot be hot swapped.", inputFile);
-            return null;
-        }
-        generatedClasses3Names.add(
-                inputFile.getAbsolutePath().substring(
-                    inputDir.getAbsolutePath().length() + 1,
-                    inputFile.getAbsolutePath().length() - ".class".length())
-                        .replace(File.separatorChar, '.'));
-        return null;
-    }
-
-    /**
-     * Use asm to generate a concrete subclass of the AppPathLoaderImpl class.
-     * It only implements one method :
-     *      String[] getPatchedClasses();
-     *
-     * The method is supposed to return the list of classes that were patched in this iteration.
-     * This will be used by the InstantRun runtime to load all patched classes and register them
-     * as overrides on the original classes.2 class files.
-     *
-     * @param patchFileContents list of patched class names.
-     * @param outputDir output directory where to generate the .class file in.
-     */
-    private static void writePatchFileContents(
-            @NonNull ImmutableList<String> patchFileContents, @NonNull File outputDir, long buildId) {
-
-        ClassWriter cw = new ClassWriter(0);
-        MethodVisitor mv;
-
-        cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER,
-                IncrementalVisitor.APP_PATCHES_LOADER_IMPL, null,
-                IncrementalVisitor.ABSTRACT_PATCHES_LOADER_IMPL, null);
-
-        // Add the build ID to force the patch file to be repackaged.
-        cw.visitField(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC + Opcodes.ACC_FINAL,
-                "BUILD_ID", "J", null, buildId);
-
-        {
-            mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
-            mv.visitCode();
-            mv.visitVarInsn(Opcodes.ALOAD, 0);
-            mv.visitMethodInsn(Opcodes.INVOKESPECIAL,
-                    IncrementalVisitor.ABSTRACT_PATCHES_LOADER_IMPL,
-                    "<init>", "()V", false);
-            mv.visitInsn(Opcodes.RETURN);
-            mv.visitMaxs(1, 1);
-            mv.visitEnd();
-        }
-        {
-            mv = cw.visitMethod(Opcodes.ACC_PUBLIC,
-                    "getPatchedClasses", "()[Ljava/lang/String;", null, null);
-            mv.visitCode();
-            mv.visitIntInsn(Opcodes.BIPUSH, patchFileContents.size());
-            mv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/String");
-            for (int index=0; index < patchFileContents.size(); index++) {
-                mv.visitInsn(Opcodes.DUP);
-                mv.visitIntInsn(Opcodes.BIPUSH, index);
-                mv.visitLdcInsn(patchFileContents.get(index));
-                mv.visitInsn(Opcodes.AASTORE);
-            }
-            mv.visitInsn(Opcodes.ARETURN);
-            mv.visitMaxs(4, 1);
-            mv.visitEnd();
-        }
-        cw.visitEnd();
-
-        byte[] classBytes = cw.toByteArray();
-        File outputFile = new File(outputDir, IncrementalVisitor.APP_PATCHES_LOADER_IMPL + ".class");
-        try {
-            Files.createParentDirs(outputFile);
-            Files.write(classBytes, outputFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static class NonDelegatingUrlClassloader extends URLClassLoader {
+    static class NonDelegatingUrlClassloader extends URLClassLoader {
 
         public NonDelegatingUrlClassloader(@NonNull List<URL> urls) {
             super(urls.toArray(new URL[urls.size()]), null);

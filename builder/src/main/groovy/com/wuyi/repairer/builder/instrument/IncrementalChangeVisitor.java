@@ -18,6 +18,7 @@ package com.wuyi.repairer.builder.instrument;
 
 import com.android.annotations.NonNull;
 import com.android.utils.ILogger;
+import com.wuyi.repairer.builder.Logger;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;

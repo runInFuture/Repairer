@@ -20,6 +20,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Ordering;
+import com.wuyi.repairer.builder.Logger;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -141,6 +142,10 @@ abstract class StringSwitch {
     private void visitClassifier(GeneratorAdapter mv, Set<String> strings) {
         visitString();
         visitHashMethod(mv);
+
+        for (String s : strings) {
+            Logger.getInstance().log("++++++++++++++++++++: " + s);
+        }
 
         // Group strings by hash code.
         Multimap<Integer, String> buckets = Multimaps.index(strings, HASH_METHOD::apply);

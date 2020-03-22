@@ -2,54 +2,45 @@ package com.wuyi.repairer;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.wuyi.repairer.annotation.Fix;
+import com.wuyi.repairer.patch.Repairer;
+import com.wuyi.repairer.runtime.AndroidInstantRuntime;
+import com.wuyi.repairer.runtime.IncrementalChange;
 
-import java.lang.reflect.Field;
+import java.io.File;
 
 public class MainActivity extends Activity {
+    public static final long serialVersionUID = 4273359790103098749L;
+    public static IncrementalChange $change;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        TextView tv = new TextView(this);
-        tv.setText("Clickd ddddddMe!ddddddddddss");
-        tv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showToast();
-            }
-        });
-        tv.setGravity(Gravity.CENTER);
-        tv.setTextSize(30);
-        tv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        setContentView(tv);
+        setContentView(R.layout.activity_main);
+    }
+
+    public void showToast2(View view) {
+        IncrementalChange var1 = (IncrementalChange) AndroidInstantRuntime.getPrivateField(this, MainActivity.class, "$change");
+        if (var1 != null) {
+            var1.access$dispatch("showToast.()V", new Object[]{this});
+        } else {
+            Toast.makeText(this, "  Something must be wrong...", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
      * This is the method to be fixed
      */
-    private void showToast() {
+    public void showToast(View view) {
         Toast.makeText(this, "  Something must be wrong...", Toast.LENGTH_SHORT).show();
-        String message = "";
-        try {
-            Field field = this.getClass().getDeclaredField("$change");
-            message = String.valueOf(field.get(this));
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            message = e.getMessage();
-        }
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
-    /**
-     * The fixed version method
-     */
-    @Fix
-    private void showToastFix() {
-        Toast.makeText(this, "Aha! We fixed anything!", Toast.LENGTH_SHORT).show();
+    public void patch(View view) {
+        Repairer.Patch patch = new Repairer.Patch();
+        patch.optDir = new File(MainActivity.this.getFilesDir(), "fix_opt");
+        patch.optDir.mkdirs();
+        new Repairer().apply(patch);
     }
 }
